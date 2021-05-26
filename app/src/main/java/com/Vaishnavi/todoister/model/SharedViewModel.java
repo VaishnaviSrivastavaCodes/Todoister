@@ -19,6 +19,6 @@ public class SharedViewModel extends ViewModel {
         this.isEdit=isEdit;
     }
     public boolean getIsEdit(){
-        return isEdit;
+        return this.isEdit;
     }
 }

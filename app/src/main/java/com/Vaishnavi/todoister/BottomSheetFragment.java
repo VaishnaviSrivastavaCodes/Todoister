@@ -2,6 +2,7 @@ package com.Vaishnavi.todoister;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +30,10 @@ import androidx.lifecycle.ViewModelProvider;
 import java.util.Calendar;
 import java.util.Date;
 
+
+
 public class BottomSheetFragment extends BottomSheetDialogFragment implements View.OnClickListener {
+    Calendar calendar = Calendar.getInstance();
     private EditText enterTodo;
     private ImageButton calendarButton;
     private ImageButton priorityButton;
@@ -40,12 +44,11 @@ public class BottomSheetFragment extends BottomSheetDialogFragment implements Vi
     private CalendarView calendarView;
     private Group calendarGroup;
     private Date dueDate;
-    Calendar calendar = Calendar.getInstance();
     private SharedViewModel sharedViewModel;
     private boolean isEdit;
-    private  Priority priority;
-    public BottomSheetFragment(){
+    private Priority priority;
 
+    public BottomSheetFragment() {
     }
 
     @Override
@@ -59,52 +62,48 @@ public class BottomSheetFragment extends BottomSheetDialogFragment implements Vi
         calendarButton = view.findViewById(R.id.today_calendar_button);
         enterTodo = view.findViewById(R.id.enter_todo_et);
         saveButton = view.findViewById(R.id.save_todo_button);
-        priorityRadioGroup = view.findViewById(R.id.radioGroup_priority);
         priorityButton = view.findViewById(R.id.priority_todo_button);
+        priorityRadioGroup = view.findViewById(R.id.radioGroup_priority);
+
         Chip todayChip = view.findViewById(R.id.today_chip);
         todayChip.setOnClickListener(this);
         Chip tomorrowChip = view.findViewById(R.id.tomorrow_chip);
         tomorrowChip.setOnClickListener(this);
         Chip nextWeekChip = view.findViewById(R.id.next_week_chip);
         nextWeekChip.setOnClickListener(this);
-        
-        return  view;
 
-
+        return view;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        isEdit = sharedViewModel.getIsEdit();
-        if(sharedViewModel.getSelectedItem().getValue()!=null){
+
+        if (sharedViewModel.getSelectedItem().getValue() != null) {
+            isEdit = sharedViewModel.getIsEdit();
             Task task = sharedViewModel.getSelectedItem().getValue();
             enterTodo.setText(task.getTask());
+            Log.d("MY", "onViewCreated: " + isEdit + " " + task.getTask());
         }
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         sharedViewModel = new ViewModelProvider(requireActivity())
                 .get(SharedViewModel.class);
 
+        calendarButton.setOnClickListener(view12 -> {
+            calendarGroup.setVisibility(calendarGroup.getVisibility() == View.GONE ?
+                    View.VISIBLE : View.GONE);
+            Utils.hideSoftKeyboard(view12);
 
-        calendarButton.setOnClickListener(v -> {
-         calendarGroup.setVisibility(
-                 calendarGroup.getVisibility() ==View.GONE ? View.VISIBLE : View.GONE);
-         Utils.hideSoftKeyboard(v);
         });
-
-
-        calendarView.setOnDateChangeListener((calendarView, year, month, dayOfMonth) -> {
+        calendarView.setOnDateChangeListener((calendarView, year, month, dayOfMoth) -> {
             calendar.clear();
-            calendar.set(year,month,dayOfMonth);
+            calendar.set(year, month, dayOfMoth);
             dueDate = calendar.getTime();
 
         });
-
-
         priorityButton.setOnClickListener(view13 -> {
             Utils.hideSoftKeyboard(view13);
             priorityRadioGroup.setVisibility(
@@ -129,24 +128,14 @@ public class BottomSheetFragment extends BottomSheetDialogFragment implements Vi
             });
         });
 
-        saveButton.setOnClickListener(v -> {
+        saveButton.setOnClickListener(view1 -> {
+            String task = enterTodo.getText().toString().trim();
 
-           String task = enterTodo.getText().toString().trim();
-           if(!TextUtils.isEmpty(task)){
-               if(priority==null){
-                   priority= Priority.LOW;
-               }
-               if(dueDate==null){
-                   calendar.clear();
-                   calendar.add(Calendar.DAY_OF_YEAR, 0);
-                   dueDate= calendar.getTime();
-               }
+            if (!TextUtils.isEmpty(task) && dueDate != null && priority != null) {
                 Task myTask = new Task(task, priority,
-                        dueDate,Calendar.getInstance().getTime(),
+                        dueDate, Calendar.getInstance().getTime(),
                         false);
-                   Utils.hideSoftKeyboard(v);
-
-                if(isEdit){
+                if (isEdit) {
                     Task updateTask = sharedViewModel.getSelectedItem().getValue();
                     updateTask.setTask(task);
                     updateTask.setDateCreated(Calendar.getInstance().getTime());
@@ -154,54 +143,52 @@ public class BottomSheetFragment extends BottomSheetDialogFragment implements Vi
                     updateTask.setDueDate(dueDate);
                     TaskViewModel.update(updateTask);
                     sharedViewModel.setIsEdit(false);
-                }
-                else {
-                    enterTodo.setText("");
+                    Toast.makeText(getActivity(), R.string.task_updated,Toast.LENGTH_SHORT)
+                    .show();
+
+                } else {
                     TaskViewModel.insert(myTask);
+                    Toast.makeText(getActivity(), R.string.new_task_toast,Toast.LENGTH_SHORT)
+                        .show();
                 }
-               enterTodo.setText("");
-                if(this.isVisible()){
+                enterTodo.setText("");
+                if (this.isVisible()) {
                     this.dismiss();
                 }
 
-           }
-           else{
-               Snackbar.make(saveButton, R.string.empty_field,Snackbar.LENGTH_LONG)
-               .show();
-           }
-            if(isEdit){
-            Toast.makeText(getActivity(), R.string.task_updated,Toast.LENGTH_SHORT)
-                    .show();}
-            else{
-                Toast.makeText(getActivity(), R.string.new_task_toast,Toast.LENGTH_SHORT)
+            }else {
+                Snackbar.make(saveButton, R.string.empty_field, Snackbar.LENGTH_LONG)
                         .show();
             }
-
         });
+
 
     }
 
     @Override
-    public void onClick(View v) {
-        int id = v.getId();
-        if(id ==R.id.today_chip){
-            calendar.clear();
-          calendar.add(Calendar.DAY_OF_YEAR, 0);
-            dueDate= calendar.getTime();
+    public void onClick(View view) {
 
-        }
+        int id = view.getId();
+        if (id == R.id.today_chip) {
+            //set data for today
+            calendar.add(Calendar.DAY_OF_YEAR, 0);
+            dueDate = calendar.getTime();
 
-        else if(id == R.id.tomorrow_chip){
-            calendar.clear();
+
+
+        } else if (id == R.id.tomorrow_chip) {
+
             calendar.add(Calendar.DAY_OF_YEAR, 1);
-            dueDate= calendar.getTime();
-        }
-        else if(id == R.id.next_week_chip){
-            calendar.clear();
-            calendar.add(Calendar.DAY_OF_YEAR,7);
-            dueDate= calendar.getTime();
-        }
+            dueDate = calendar.getTime();
 
+
+        } else if (id == R.id.next_week_chip) {
+
+            calendar.add(Calendar.DAY_OF_YEAR, 7);
+            dueDate = calendar.getTime();
+
+
+        }
 
     }
 }

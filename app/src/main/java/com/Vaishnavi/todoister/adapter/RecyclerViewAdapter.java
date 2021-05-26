@@ -11,7 +11,6 @@ import androidx.appcompat.widget.AppCompatRadioButton;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.Vaishnavi.todoister.OnTodoClickListener;
 import com.Vaishnavi.todoister.R;
 import com.Vaishnavi.todoister.model.Task;
 import com.Vaishnavi.todoister.util.Utils;

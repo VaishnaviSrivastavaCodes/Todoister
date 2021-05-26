@@ -1,4 +1,4 @@
-package com.Vaishnavi.todoister;
+package com.Vaishnavi.todoister.adapter;
 
 import com.Vaishnavi.todoister.model.Task;
 

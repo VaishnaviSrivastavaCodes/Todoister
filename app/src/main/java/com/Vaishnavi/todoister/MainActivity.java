@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import com.Vaishnavi.todoister.adapter.RecyclerViewAdapter;
 import com.Vaishnavi.todoister.model.Priority;
+import com.Vaishnavi.todoister.model.SharedViewModel;
 import com.Vaishnavi.todoister.model.Task;
 import com.Vaishnavi.todoister.model.TaskViewModel;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -21,14 +22,16 @@ import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import java.util.Calendar;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnTodoClickListener {
     private TaskViewModel taskViewModel;
     private RecyclerView recyclerView;
     private RecyclerViewAdapter recyclerViewAdapter;
     BottomSheetFragment bottomSheetFragment;
+    private SharedViewModel sharedViewModel;
 
 
     @Override
@@ -52,11 +55,16 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.getApplication())
                 .create(TaskViewModel.class);
 
+        sharedViewModel = new ViewModelProvider(this)
+                .get(SharedViewModel.class);
+
 
         taskViewModel.getAllTasks().observe(this, tasks->{
-            recyclerViewAdapter = new RecyclerViewAdapter(tasks);
+            recyclerViewAdapter = new RecyclerViewAdapter(tasks, this);
             recyclerView.setAdapter(recyclerViewAdapter);
         });
+
+
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
@@ -92,5 +100,21 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onTodoClick(Task task) {
+
+        sharedViewModel.selectItem(task);
+        sharedViewModel.setIsEdit(true);
+        showBottomSheetDialog();
+    }
+
+    @Override
+    public void onTodoRadioButtonClick(Task task) {
+        TaskViewModel.delete(task);
+        recyclerViewAdapter.notifyDataSetChanged();
+        Toast.makeText(MainActivity.this, R.string.task_completed_toast,Toast.LENGTH_SHORT)
+                .show();
     }
 }

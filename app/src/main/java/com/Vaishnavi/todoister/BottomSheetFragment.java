@@ -170,11 +170,9 @@ public class BottomSheetFragment extends BottomSheetDialogFragment implements Vi
 
         int id = view.getId();
         if (id == R.id.today_chip) {
-            //set data for today
+            //set date for today
             calendar.add(Calendar.DAY_OF_YEAR, 0);
             dueDate = calendar.getTime();
-
-
 
         } else if (id == R.id.tomorrow_chip) {
 
